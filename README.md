@@ -1,1 +1,3 @@
-This is a repository for the simulations I use in my class.  This is a living site, so check back frequently for updates.
+# Lessons With Londot Physics Simulations
+
+Upload the contents of this folder to the root of the GitHub repository. GitHub Pages links remain stable because each simulation is stored in its own folder with an `index.html` file.
