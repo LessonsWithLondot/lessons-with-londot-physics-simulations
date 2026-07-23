@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Motional EMF & Electromagnetic Induction Virtual Lab</title>
+<style>
+:root{
+  --purple:#462b7a;
+  --purple2:#6a4aa1;
+  --yellow:#facf22;
+  --ink:#1f2430;
+  --muted:#667085;
+  --line:#d9dce5;
+  --panel:#ffffff;
+  --bg:#f4f5f9;
+  --good:#2c7a4b;
+  --danger:#b42318;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+}
+header{
+  background:linear-gradient(135deg,var(--purple),#2f1c58);
+  color:white;
+  padding:18px 22px;
+  border-bottom:5px solid var(--yellow);
+}
+header h1{margin:0;font-size:clamp(1.5rem,3vw,2.4rem)}
+header p{margin:7px 0 0;max-width:1000px;line-height:1.45}
+main{
+  max-width:1500px;
+  margin:0 auto;
+  padding:16px;
+  display:grid;
+  grid-template-columns:minmax(320px,1.45fr) minmax(300px,.8fr);
+  gap:16px;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 4px 14px rgba(25,25,45,.07);
+}
+.sim-card{padding:14px}
+.side{display:flex;flex-direction:column;gap:16px}
+.section{padding:16px}
+.section h2,.section h3{margin:0 0 12px;color:var(--purple)}
+#stage{
+  width:100%;
+  height:auto;
+  display:block;
+  background:#fbfcff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  touch-action:none;
+}
+.controls{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.control{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  background:#fafafe;
+}
+.control label{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.control input[type=range]{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+button{
+  appearance:none;
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:700;
+  cursor:pointer;
+  background:var(--purple);
+  color:#fff;
+}
+button.secondary{background:#ece8f5;color:var(--purple)}
+button.warning{background:#fff3cd;color:#6b5200;border:1px solid #e5c34f}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(70,43,122,.25);outline-offset:2px}
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.metric{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  background:#fff;
+}
+.metric .label{font-size:.82rem;color:var(--muted)}
+.metric .value{font-size:1.5rem;font-weight:800;color:var(--purple);margin-top:4px}
+.small{font-size:.88rem;color:var(--muted);line-height:1.4}
+select,input[type=number]{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:9px;
+  font-size:1rem;
+  background:#fff;
+}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:7px;text-align:center}
+th{background:#eeeaf6;color:#2f1c58}
+.table-wrap{overflow:auto;max-height:270px}
+canvas{
+  width:100%;
+  height:210px;
+  display:block;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:white;
+}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin-top:7px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.badge{
+  display:inline-block;
+  border-radius:999px;
+  padding:4px 9px;
+  background:#eeeaf6;
+  color:var(--purple);
+  font-weight:700;
+  font-size:.82rem;
+}
+.prompt{
+  border-left:5px solid var(--yellow);
+  padding:10px 12px;
+  background:#fffaf0;
+  line-height:1.45;
+}
+@media(max-width:980px){
+  main{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .controls,.metrics{grid-template-columns:1fr}
+  header{padding:15px}
+  main{padding:10px}
+  .row button{flex:1 1 45%}
+}
+@media print{
+  header,.controls,.row,canvas{display:none!important}
+  body{background:white}
+  main{display:block;max-width:none}
+  .card{box-shadow:none;margin-bottom:12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Motional EMF & Electromagnetic Induction Virtual Lab</h1>
+  <p>Move a conducting rod through a magnetic field and collect measurements from a realistic rail-and-meter apparatus. Use the data to determine how induced emf and current depend on the experimental variables.</p>
+</header>
+
+<main>
+  <section class="card sim-card">
+    <svg id="stage" viewBox="0 0 980 590" role="img" aria-label="Conducting rod sliding on rails through a magnetic field">
+      <defs>
+        <pattern id="fieldDots" width="34" height="34" patternUnits="userSpaceOnUse">
+          <circle cx="17" cy="17" r="4.2" fill="#462b7a"/>
+          <circle cx="17" cy="17" r="1.5" fill="#fff"/>
+        </pattern>
+        <pattern id="fieldCrosses" width="34" height="34" patternUnits="userSpaceOnUse">
+          <path d="M12 12 L22 22 M22 12 L12 22" stroke="#462b7a" stroke-width="3"/>
+        </pattern>
+        <linearGradient id="rodGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#8f5d25"/>
+          <stop offset=".5" stop-color="#e4ad66"/>
+          <stop offset="1" stop-color="#7a481d"/>
+        </linearGradient>
+      </defs>
+
+      <rect x="0" y="0" width="980" height="590" fill="#fbfcff"/>
+      <text x="30" y="42" font-size="24" font-weight="700" fill="#462b7a">Sliding Rod Generator</text>
+
+      <rect x="205" y="105" width="585" height="350" rx="14" fill="url(#fieldDots)" opacity=".9" id="fieldRegion"/>
+      <text x="222" y="137" font-size="18" font-weight="700" fill="#462b7a" id="fieldLabel">Magnetic field: out of page</text>
+
+      <line x1="125" y1="195" x2="850" y2="195" stroke="#50545e" stroke-width="10" stroke-linecap="round"/>
+      <line x1="125" y1="395" x2="850" y2="395" stroke="#50545e" stroke-width="10" stroke-linecap="round"/>
+
+      <path d="M125 195 C65 195,65 395,125 395" fill="none" stroke="#50545e" stroke-width="10"/>
+      <rect x="56" y="262" width="66" height="64" rx="8" fill="#fff" stroke="#462b7a" stroke-width="4"/>
+      <text x="89" y="287" text-anchor="middle" font-size="14" font-weight="700">LOAD</text>
+      <text x="89" y="310" text-anchor="middle" font-size="16" id="loadText">10 Ω</text>
+
+      <g id="rod" cursor="grab">
+        <rect x="535" y="175" width="28" height="240" rx="10" fill="url(#rodGrad)" stroke="#6f421b" stroke-width="3"/>
+        <circle cx="549" cy="195" r="9" fill="#dfe3ea" stroke="#3b3f47" stroke-width="2"/>
+        <circle cx="549" cy="395" r="9" fill="#dfe3ea" stroke="#3b3f47" stroke-width="2"/>
+      </g>
+
+      <g id="forceArrow">
+        <line x1="580" y1="290" x2="680" y2="290" stroke="#b42318" stroke-width="7"/>
+        <polygon points="680,290 654,274 654,306" fill="#b42318"/>
+        <text x="630" y="270" text-anchor="middle" font-size="17" font-weight="700" fill="#b42318">motion</text>
+      </g>
+
+      <g id="charges"></g>
+
+      <g transform="translate(695 475)">
+        <rect width="245" height="88" rx="12" fill="#fff" stroke="#d9dce5" stroke-width="2"/>
+        <text x="18" y="28" font-size="14" fill="#667085">Rod position</text>
+        <text id="positionMeter" x="225" y="29" text-anchor="end" font-size="23" font-weight="800" fill="#462b7a">0.60 m</text>
+        <text x="18" y="60" font-size="14" fill="#667085">Current direction</text>
+        <text id="directionMeter" x="225" y="61" text-anchor="end" font-size="17" font-weight="800" fill="#462b7a">No current</text>
+      </g>
+
+      <g transform="translate(30 475)">
+        <rect width="280" height="88" rx="12" fill="#fff" stroke="#d9dce5" stroke-width="2"/>
+        <text x="18" y="28" font-size="14" fill="#667085">Drag the rod or press Run</text>
+        <text x="18" y="57" font-size="14" fill="#667085">Meters display measured values only.</text>
+      </g>
+    </svg>
+
+    <div class="section">
+      <div class="metrics">
+        <div class="metric"><div class="label">Measured EMF</div><div class="value" id="emfValue">0.000 V</div></div>
+        <div class="metric"><div class="label">Measured Current</div><div class="value" id="currentValue">0.000 A</div></div>
+        <div class="metric"><div class="label">Rod Speed</div><div class="value" id="speedValue">0.00 m/s</div></div>
+      </div>
+    </div>
+
+    <div class="section controls">
+      <div class="control">
+        <label><span>Magnetic field</span><span id="bRead">0.60 T</span></label>
+        <input id="bSlider" type="range" min="0.10" max="1.20" step="0.05" value="0.60">
+      </div>
+      <div class="control">
+        <label><span>Rod length</span><span id="lRead">0.50 m</span></label>
+        <input id="lSlider" type="range" min="0.20" max="0.80" step="0.05" value="0.50">
+      </div>
+      <div class="control">
+        <label><span>Target speed</span><span id="vRead">1.00 m/s</span></label>
+        <input id="vSlider" type="range" min="0.20" max="4.00" step="0.10" value="1.00">
+      </div>
+      <div class="control">
+        <label><span>Load resistance</span><span id="rRead">10.0 Ω</span></label>
+        <input id="rSlider" type="range" min="2" max="30" step="1" value="10">
+      </div>
+      <div class="control">
+        <label for="fieldDirection"><span>Field direction</span></label>
+        <select id="fieldDirection">
+          <option value="out">Out of page</option>
+          <option value="in">Into page</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="motionMode"><span>Motion mode</span></label>
+        <select id="motionMode">
+          <option value="right">Move right</option>
+          <option value="left">Move left</option>
+          <option value="oscillate">Oscillate</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <button id="runBtn" type="button">Run</button>
+        <button id="pauseBtn" class="secondary" type="button">Pause</button>
+        <button id="resetBtn" class="secondary" type="button">Reset</button>
+        <button id="recordBtn" type="button">Record Trial</button>
+      </div>
+      <p class="small">Small measurement variation is included so repeated runs are not perfectly identical. Students should use several trials when identifying patterns.</p>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section class="card section">
+      <h2>Investigation Modes</h2>
+      <p class="prompt"><strong>Suggested sequence:</strong> Hold three variables constant, change only one, and determine how the measured emf responds.</p>
+      <div class="row">
+        <span class="badge">Field strength</span>
+        <span class="badge">Rod length</span>
+        <span class="badge">Speed</span>
+        <span class="badge">Resistance</span>
+        <span class="badge">Direction</span>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>Live Graph</h2>
+      <canvas id="graph" width="720" height="310" aria-label="Live graph of measured emf and current over time"></canvas>
+      <div class="legend">
+        <span><span class="dot" style="background:#462b7a"></span>EMF</span>
+        <span><span class="dot" style="background:#b42318"></span>Current</span>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2>Data Table</h2>
+      <div class="table-wrap">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Trial</th><th>B (T)</th><th>L (m)</th><th>v (m/s)</th><th>R (Ω)</th><th>EMF (V)</th><th>I (A)</th><th>Direction</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="copyBtn" class="secondary" type="button">Copy Data</button>
+        <button id="csvBtn" class="secondary" type="button">Download CSV</button>
+        <button id="clearBtn" class="warning" type="button">Clear Data</button>
+      </div>
+      <p id="status" class="small" aria-live="polite"></p>
+    </section>
+  </aside>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const rod = $("rod"), charges = $("charges"), fieldRegion = $("fieldRegion");
+  const fieldLabel = $("fieldLabel"), forceArrow = $("forceArrow");
+  const emfValue = $("emfValue"), currentValue = $("currentValue"), speedValue = $("speedValue");
+  const positionMeter = $("positionMeter"), directionMeter = $("directionMeter"), loadText = $("loadText");
+  const bSlider = $("bSlider"), lSlider = $("lSlider"), vSlider = $("vSlider"), rSlider = $("rSlider");
+  const bRead = $("bRead"), lRead = $("lRead"), vRead = $("vRead"), rRead = $("rRead");
+  const fieldDirection = $("fieldDirection"), motionMode = $("motionMode");
+  const canvas = $("graph"), ctx = canvas.getContext("2d");
+  const tbody = $("dataTable").querySelector("tbody");
+  const status = $("status");
+
+  let x = 535, running = false, dragging = false, lastTime = performance.now();
+  let actualSpeed = 0, emf = 0, current = 0, time = 0, oscillationDir = 1;
+  let samples = [], trials = [];
+  const minX = 215, maxX = 760;
+
+  function value(id){ return parseFloat(id.value); }
+  function syncLabels(){
+    bRead.textContent = value(bSlider).toFixed(2)+" T";
+    lRead.textContent = value(lSlider).toFixed(2)+" m";
+    vRead.textContent = value(vSlider).toFixed(2)+" m/s";
+    rRead.textContent = value(rSlider).toFixed(1)+" Ω";
+    loadText.textContent = value(rSlider).toFixed(0)+" Ω";
+    const isOut = fieldDirection.value==="out";
+    fieldRegion.setAttribute("fill", isOut ? "url(#fieldDots)" : "url(#fieldCrosses)");
+    fieldLabel.textContent = "Magnetic field: " + (isOut ? "out of page" : "into page");
+    updatePhysics();
+  }
+
+  function measured(base, span){
+    return base + (Math.random()-0.5)*span;
+  }
+
+  function updatePhysics(){
+    const B=value(bSlider), L=value(lSlider), R=value(rSlider);
+    const signB = fieldDirection.value==="out" ? 1 : -1;
+    const rawEmf = signB * actualSpeed * B * L;
+    emf = Math.abs(actualSpeed) < 0.005 ? 0 : measured(rawEmf, Math.max(.001,Math.abs(rawEmf)*.012));
+    current = Math.abs(emf) < .0005 ? 0 : measured(emf/R, Math.max(.0002,Math.abs(emf/R)*.015));
+
+    emfValue.textContent = emf.toFixed(3)+" V";
+    currentValue.textContent = current.toFixed(3)+" A";
+    speedValue.textContent = actualSpeed.toFixed(2)+" m/s";
+    positionMeter.textContent = (((x-minX)/(maxX-minX))*1.2).toFixed(2)+" m";
+
+    const dir = current > .0005 ? "Clockwise" : current < -.0005 ? "Counterclockwise" : "No current";
+    directionMeter.textContent = dir;
+
+    forceArrow.setAttribute("transform", actualSpeed < 0 ? `translate(${2*x+28},0) scale(-1,1)` : "");
+    drawCharges(dir);
+  }
+
+  function drawCharges(dir){
+    charges.innerHTML="";
+    if(dir==="No current") return;
+    const n=9;
+    for(let i=0;i<n;i++){
+      const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+      c.setAttribute("r","5");
+      c.setAttribute("fill", i%2 ? "#b42318" : "#1565c0");
+      let y = 190 + i*(205/(n-1));
+      c.setAttribute("cx", x+14);
+      c.setAttribute("cy", y);
+      charges.appendChild(c);
+    }
+  }
+
+  function placeRod(){
+    rod.setAttribute("transform",`translate(${x-535},0)`);
+    updatePhysics();
+  }
+
+  function animate(now){
+    const dt=Math.min(.04,(now-lastTime)/1000); lastTime=now;
+    if(running){
+      const target=value(vSlider);
+      if(motionMode.value==="right") actualSpeed=target;
+      else if(motionMode.value==="left") actualSpeed=-target;
+      else actualSpeed=target*oscillationDir;
+
+      x += actualSpeed*dt*135;
+      if(x>=maxX){x=maxX; if(motionMode.value==="oscillate") oscillationDir=-1; else running=false;}
+      if(x<=minX){x=minX; if(motionMode.value==="oscillate") oscillationDir=1; else running=false;}
+      time += dt;
+      if(samples.length===0 || time-samples[samples.length-1].t>.05){
+        samples.push({t:time,e:emf,i:current});
+        if(samples.length>240) samples.shift();
+      }
+    } else if(!dragging) actualSpeed=0;
+    placeRod();
+    drawGraph();
+    requestAnimationFrame(animate);
+  }
+
+  function pointerX(evt){
+    const pt=$("stage").createSVGPoint();
+    pt.x=evt.clientX; pt.y=evt.clientY;
+    return pt.matrixTransform($("stage").getScreenCTM().inverse()).x;
+  }
+  rod.addEventListener("pointerdown",e=>{
+    dragging=true; running=false; rod.setPointerCapture(e.pointerId); rod.style.cursor="grabbing";
+    rod.dataset.lastX=pointerX(e); rod.dataset.lastT=performance.now();
+  });
+  rod.addEventListener("pointermove",e=>{
+    if(!dragging) return;
+    const nx=Math.max(minX,Math.min(maxX,pointerX(e)-14));
+    const now=performance.now(), dt=Math.max(.016,(now-parseFloat(rod.dataset.lastT))/1000);
+    actualSpeed=((nx-x)/135)/dt;
+    x=nx; rod.dataset.lastX=nx; rod.dataset.lastT=now; time+=dt;
+    samples.push({t:time,e:emf,i:current});
+    if(samples.length>240) samples.shift();
+    placeRod();
+  });
+  function endDrag(){dragging=false; actualSpeed=0; rod.style.cursor="grab"; updatePhysics();}
+  rod.addEventListener("pointerup",endDrag);
+  rod.addEventListener("pointercancel",endDrag);
+
+  function drawGraph(){
+    const w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle="#e1e3ea";ctx.lineWidth=1;
+    for(let i=0;i<=6;i++){let y=30+i*(h-60)/6;ctx.beginPath();ctx.moveTo(48,y);ctx.lineTo(w-18,y);ctx.stroke();}
+    for(let i=0;i<=8;i++){let xx=48+i*(w-66)/8;ctx.beginPath();ctx.moveTo(xx,20);ctx.lineTo(xx,h-30);ctx.stroke();}
+    ctx.strokeStyle="#555";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(48,20);ctx.lineTo(48,h-30);ctx.lineTo(w-18,h-30);ctx.stroke();
+    ctx.fillStyle="#667085";ctx.font="14px Arial";
+    ctx.fillText("time",w-55,h-8);ctx.save();ctx.translate(15,h/2);ctx.rotate(-Math.PI/2);ctx.fillText("relative meter reading",0,0);ctx.restore();
+    if(samples.length<2)return;
+    const t0=samples[0].t,t1=samples[samples.length-1].t||t0+1;
+    const max=Math.max(.01,...samples.map(s=>Math.max(Math.abs(s.e),Math.abs(s.i)*10)));
+    function line(key,scale,color){
+      ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();
+      samples.forEach((s,j)=>{
+        const xx=48+(s.t-t0)/(t1-t0||1)*(w-66);
+        const val=s[key]*scale;
+        const yy=(h-30)-((val/max+1)/2)*(h-50);
+        j?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);
+      });ctx.stroke();
+    }
+    line("e",1,"#462b7a");line("i",10,"#b42318");
+  }
+
+  function record(){
+    const dir=directionMeter.textContent;
+    const trial={
+      n:trials.length+1,b:value(bSlider),l:value(lSlider),v:Math.abs(actualSpeed)||value(vSlider),
+      r:value(rSlider),e:Math.abs(emf),i:Math.abs(current),d:dir
+    };
+    trials.push(trial); renderTable(); status.textContent="Trial recorded.";
+  }
+  function renderTable(){
+    tbody.innerHTML=trials.map(t=>`<tr><td>${t.n}</td><td>${t.b.toFixed(2)}</td><td>${t.l.toFixed(2)}</td><td>${t.v.toFixed(2)}</td><td>${t.r.toFixed(1)}</td><td>${t.e.toFixed(3)}</td><td>${t.i.toFixed(3)}</td><td>${t.d}</td></tr>`).join("");
+  }
+  function csv(){
+    const rows=[["Trial","B (T)","L (m)","Speed (m/s)","Resistance (ohm)","EMF (V)","Current (A)","Direction"],...trials.map(t=>[t.n,t.b,t.l,t.v,t.r,t.e,t.i,t.d])];
+    return rows.map(r=>r.join(",")).join("\n");
+  }
+
+  $("runBtn").addEventListener("click",()=>{running=true; lastTime=performance.now();});
+  $("pauseBtn").addEventListener("click",()=>{running=false;actualSpeed=0;updatePhysics();});
+  $("resetBtn").addEventListener("click",()=>{running=false;x=535;actualSpeed=0;time=0;samples=[];placeRod();drawGraph();});
+  $("recordBtn").addEventListener("click",record);
+  $("clearBtn").addEventListener("click",()=>{trials=[];renderTable();status.textContent="Data cleared.";});
+  $("copyBtn").addEventListener("click",async()=>{
+    try{await navigator.clipboard.writeText(csv());status.textContent="Data copied for Google Sheets.";}
+    catch{status.textContent="Copy was blocked by the browser. Use Download CSV instead.";}
+  });
+  $("csvBtn").addEventListener("click",()=>{
+    const blob=new Blob([csv()],{type:"text/csv"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="motional_emf_data.csv";a.click();URL.revokeObjectURL(a.href);
+  });
+  [bSlider,lSlider,vSlider,rSlider,fieldDirection].forEach(el=>el.addEventListener("input",syncLabels));
+  motionMode.addEventListener("change",()=>{oscillationDir=1;});
+  syncLabels();placeRod();drawGraph();requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
